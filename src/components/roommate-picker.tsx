@@ -18,8 +18,7 @@ export default function RoommatePicker({ guests, selectedIds, onChange }: Props)
     const q = query.trim().toLowerCase();
     return guests
       .filter((g) => !selectedIds.includes(g.id))
-      .filter((g) => !q || g.name.toLowerCase().includes(q))
-      .slice(0, 8);
+      .filter((g) => !q || g.name.toLowerCase().includes(q));
   }, [guests, selectedIds, query]);
 
   function addGuest(id: string) {
@@ -62,29 +61,27 @@ export default function RoommatePicker({ guests, selectedIds, onChange }: Props)
         className="w-full rounded border border-ochre/35 bg-cream px-4 py-3 font-sans text-sm text-ink outline-none focus:border-ochre"
       />
 
-      {query.trim().length > 0 && (
-        <div className="mt-2 max-h-48 overflow-y-auto rounded border border-ochre/35 bg-cream">
-          {results.length === 0 ? (
-            <p className="px-4 py-3 font-sans text-sm text-ink/50">No matching names.</p>
-          ) : (
-            results.map((guest) => (
-              <button
-                key={guest.id}
-                type="button"
-                onClick={() => addGuest(guest.id)}
-                className="flex w-full items-center justify-between px-4 py-2 text-left font-sans text-sm text-ink hover:bg-sand"
-              >
-                <span>
-                  {guest.name}
-                  {guest.party_label ? (
-                    <span className="ml-2 text-ink/50">— {guest.party_label}</span>
-                  ) : null}
-                </span>
-              </button>
-            ))
-          )}
-        </div>
-      )}
+      <div className="mt-2 max-h-48 overflow-y-auto rounded border border-ochre/35 bg-cream">
+        {results.length === 0 ? (
+          <p className="px-4 py-3 font-sans text-sm text-ink/50">No matching names.</p>
+        ) : (
+          results.map((guest) => (
+            <button
+              key={guest.id}
+              type="button"
+              onClick={() => addGuest(guest.id)}
+              className="flex w-full items-center justify-between px-4 py-2 text-left font-sans text-sm text-ink hover:bg-sand"
+            >
+              <span>
+                {guest.name}
+                {guest.party_label ? (
+                  <span className="ml-2 text-ink/50">— {guest.party_label}</span>
+                ) : null}
+              </span>
+            </button>
+          ))
+        )}
+      </div>
     </div>
   );
 }
