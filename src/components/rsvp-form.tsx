@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Guest } from "@/lib/supabase/types";
+import RoommatePicker from "@/components/roommate-picker";
 
 type Props = {
   guests: Guest[];
@@ -19,12 +20,6 @@ export default function RsvpForm({ guests }: Props) {
 
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
-
-  function toggleRoommate(id: string) {
-    setRoommateIds((prev) =>
-      prev.includes(id) ? prev.filter((r) => r !== id) : [...prev, id]
-    );
-  }
 
   async function submit(confirmUpdate: boolean) {
     setStatus("submitting");
@@ -167,25 +162,11 @@ export default function RsvpForm({ guests }: Props) {
           <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
             Who would you like to room with?
           </label>
-          <div className="max-h-48 space-y-2 overflow-y-auto rounded border border-ochre/35 bg-cream p-3">
-            {guests.map((guest) => (
-              <label
-                key={guest.id}
-                className="flex items-center gap-2 font-sans text-sm text-ink"
-              >
-                <input
-                  type="checkbox"
-                  checked={roommateIds.includes(guest.id)}
-                  onChange={() => toggleRoommate(guest.id)}
-                  className="h-4 w-4 accent-clay"
-                />
-                {guest.name}
-                {guest.party_label ? (
-                  <span className="text-ink/50">— {guest.party_label}</span>
-                ) : null}
-              </label>
-            ))}
-          </div>
+          <RoommatePicker
+            guests={guests}
+            selectedIds={roommateIds}
+            onChange={setRoommateIds}
+          />
         </div>
       )}
 
