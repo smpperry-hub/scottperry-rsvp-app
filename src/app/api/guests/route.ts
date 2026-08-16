@@ -38,6 +38,30 @@ export async function POST(request: Request) {
   }
 
   const body = await request.json().catch(() => null);
+
+  if (Array.isArray(body?.guests)) {
+    const rows = body.guests
+      .map((g: { name?: unknown; party_label?: unknown }) => ({
+        name: typeof g?.name === "string" ? g.name.trim() : "",
+        party_label:
+          typeof g?.party_label === "string" && g.party_label.trim()
+            ? g.party_label.trim()
+            : null,
+      }))
+      .filter((g: { name: string }) => g.name.length > 0)
+      .slice(0, 500);
+
+    if (rows.length === 0) {
+      return NextResponse.json({ error: "No valid guest names found." }, { status: 400 });
+    }
+
+    const { data, error } = await supabase.from("guests").insert(rows).select("*");
+    if (error) {
+      return NextResponse.json({ error: "Could not add guests." }, { status: 500 });
+    }
+    return NextResponse.json({ guests: data });
+  }
+
   const name = typeof body?.name === "string" ? body.name.trim() : "";
   const partyLabel =
     typeof body?.party_label === "string" && body.party_label.trim()

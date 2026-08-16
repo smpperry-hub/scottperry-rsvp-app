@@ -10,6 +10,10 @@ export default function GuestManager({ initialGuests }: { initialGuests: Guest[]
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const [bulkOpen, setBulkOpen] = useState(false);
+  const [bulkText, setBulkText] = useState("");
+  const [bulkStatus, setBulkStatus] = useState<string | null>(null);
+
   async function addGuest(e: React.FormEvent) {
     e.preventDefault();
     if (!name.trim()) return;
@@ -32,6 +36,47 @@ export default function GuestManager({ initialGuests }: { initialGuests: Guest[]
     setGuests((prev) => [...prev, data.guest].sort((a, b) => a.name.localeCompare(b.name)));
     setName("");
     setPartyLabel("");
+  }
+
+  async function addBulkGuests(e: React.FormEvent) {
+    e.preventDefault();
+    const rows = bulkText
+      .split("\n")
+      .map((line) => line.trim())
+      .filter(Boolean)
+      .map((line) => {
+        const [namePart, ...rest] = line.split(",");
+        return {
+          name: namePart.trim(),
+          party_label: rest.join(",").trim() || null,
+        };
+      })
+      .filter((row) => row.name.length > 0);
+
+    if (rows.length === 0) return;
+
+    setBusy(true);
+    setError(null);
+    setBulkStatus(null);
+
+    const res = await fetch("/api/guests", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ guests: rows }),
+    });
+    const data = await res.json();
+    setBusy(false);
+
+    if (!res.ok) {
+      setError(data.error ?? "Could not add guests.");
+      return;
+    }
+
+    setGuests((prev) =>
+      [...prev, ...data.guests].sort((a, b) => a.name.localeCompare(b.name))
+    );
+    setBulkStatus(`Added ${data.guests.length} guest${data.guests.length === 1 ? "" : "s"}.`);
+    setBulkText("");
   }
 
   async function removeGuest(id: string) {
@@ -73,6 +118,38 @@ export default function GuestManager({ initialGuests }: { initialGuests: Guest[]
           Add
         </button>
       </form>
+
+      <button
+        type="button"
+        onClick={() => setBulkOpen((v) => !v)}
+        className="mt-3 font-sans text-xs uppercase tracking-wider text-clay hover:underline"
+      >
+        {bulkOpen ? "Hide bulk add" : "Bulk add a list"}
+      </button>
+
+      {bulkOpen && (
+        <form onSubmit={addBulkGuests} className="mt-3 space-y-2">
+          <textarea
+            value={bulkText}
+            onChange={(e) => setBulkText(e.target.value)}
+            rows={6}
+            placeholder={"One guest per line, e.g.\nJane Smith\nJohn Smith, Rivera family"}
+            className="w-full resize-y rounded border border-ochre/35 bg-cream px-3 py-2 font-sans text-sm text-ink outline-none focus:border-ochre"
+          />
+          <p className="font-sans text-xs text-ink/60">
+            One name per line. Add a party label after a comma, e.g. &ldquo;Jane Smith, Rivera family&rdquo; (optional).
+          </p>
+          <button
+            type="submit"
+            disabled={busy}
+            className="rounded bg-ink px-4 py-2 font-sans text-xs font-medium uppercase tracking-wider text-cream hover:bg-clay disabled:opacity-60"
+          >
+            Add all
+          </button>
+          {bulkStatus && <p className="font-sans text-sm text-sage">{bulkStatus}</p>}
+        </form>
+      )}
+
       {error && <p className="mt-2 font-sans text-sm text-clay">{error}</p>}
 
       <ul className="mt-4 max-h-64 divide-y divide-ochre/15 overflow-y-auto">
