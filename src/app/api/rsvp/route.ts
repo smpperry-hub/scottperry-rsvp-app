@@ -3,6 +3,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 type RsvpPayload = {
   full_name?: unknown;
+  additional_names?: unknown;
   email?: unknown;
   phone?: unknown;
   attending?: unknown;
@@ -10,6 +11,26 @@ type RsvpPayload = {
   roommate_guest_ids?: unknown;
   confirmUpdate?: unknown;
 };
+
+type SupabaseAdmin = ReturnType<typeof createAdminClient>;
+
+async function findOrCreateGuestId(supabase: SupabaseAdmin, name: string): Promise<string | null> {
+  const { data: existing } = await supabase
+    .from("guests")
+    .select("id")
+    .ilike("name", name)
+    .maybeSingle();
+
+  if (existing) return existing.id;
+
+  const { data: created } = await supabase
+    .from("guests")
+    .insert({ name })
+    .select("id")
+    .single();
+
+  return created?.id ?? null;
+}
 
 export async function POST(request: Request) {
   let body: RsvpPayload;
@@ -28,6 +49,9 @@ export async function POST(request: Request) {
   const roommateIds = Array.isArray(body.roommate_guest_ids)
     ? body.roommate_guest_ids.filter((id): id is string => typeof id === "string")
     : [];
+  const rawAdditionalNames = Array.isArray(body.additional_names)
+    ? body.additional_names.filter((n): n is string => typeof n === "string")
+    : [];
 
   if (!fullName) {
     return NextResponse.json({ error: "Full name is required." }, { status: 400 });
@@ -38,6 +62,18 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
+
+  // De-dupe the party's names (case-insensitive), primary first.
+  const seen = new Set([fullName.toLowerCase()]);
+  const additionalNames: string[] = [];
+  for (const raw of rawAdditionalNames) {
+    const n = raw.trim();
+    const key = n.toLowerCase();
+    if (!n || seen.has(key)) continue;
+    seen.add(key);
+    additionalNames.push(n);
+  }
+  const allNames = [fullName, ...additionalNames];
 
   const supabase = createAdminClient();
 
@@ -58,69 +94,106 @@ export async function POST(request: Request) {
     }
   }
 
-  const { data: existing, error: existingError } = await supabase
-    .from("rsvps")
-    .select("id, full_name")
-    .ilike("full_name", fullName)
-    .maybeSingle();
+  // Look up existing RSVPs for everyone in this submission.
+  const existingByName = new Map<string, { id: string; full_name: string }>();
+  for (const n of allNames) {
+    const { data: existing, error: existingError } = await supabase
+      .from("rsvps")
+      .select("id, full_name")
+      .ilike("full_name", n)
+      .maybeSingle();
 
-  if (existingError) {
-    return NextResponse.json({ error: "Could not check for an existing response." }, { status: 500 });
+    if (existingError) {
+      return NextResponse.json({ error: "Could not check for an existing response." }, { status: 500 });
+    }
+    if (existing) existingByName.set(n, existing);
   }
 
-  if (existing && !confirmUpdate) {
+  if (existingByName.size > 0 && !confirmUpdate) {
+    const names = Array.from(existingByName.values()).map((e) => e.full_name);
     return NextResponse.json(
       {
         error: "duplicate",
-        message: `We already have a response from ${existing.full_name}. Submit again to update it.`,
-        existingId: existing.id,
+        message: `${names.join(", ")} already ${
+          names.length === 1 ? "has" : "have"
+        } a response on file. Submit again to update.`,
+        existingIds: Array.from(existingByName.values()).map((e) => e.id),
       },
       { status: 409 }
     );
   }
 
-  let rsvpId = existing?.id;
+  // Make sure everyone in this submission has a guests-table entry, so
+  // future rooming pickers and additional-name searches can find them.
+  const guestIdByName = new Map<string, string | null>();
+  for (const n of allNames) {
+    guestIdByName.set(n, await findOrCreateGuestId(supabase, n));
+  }
 
-  if (existing) {
-    const { error: updateError } = await supabase
+  async function upsertRsvp(name: string, submittedByRsvpId: string | null) {
+    const existing = existingByName.get(name);
+    if (existing) {
+      const { error } = await supabase
+        .from("rsvps")
+        .update({
+          full_name: name,
+          guest_id: guestIdByName.get(name) ?? null,
+          email,
+          phone,
+          attending,
+          notes,
+          submitted_by_rsvp_id: submittedByRsvpId,
+          submitted_at: new Date().toISOString(),
+        })
+        .eq("id", existing.id);
+      if (error) return null;
+      await supabase.from("rooming_preferences").delete().eq("rsvp_id", existing.id);
+      return existing.id;
+    }
+
+    const { data: inserted, error } = await supabase
       .from("rsvps")
-      .update({
-        full_name: fullName,
+      .insert({
+        full_name: name,
+        guest_id: guestIdByName.get(name) ?? null,
         email,
         phone,
         attending,
         notes,
-        submitted_at: new Date().toISOString(),
+        submitted_by_rsvp_id: submittedByRsvpId,
       })
-      .eq("id", existing.id);
-
-    if (updateError) {
-      return NextResponse.json({ error: "Could not update your response." }, { status: 500 });
-    }
-
-    await supabase.from("rooming_preferences").delete().eq("rsvp_id", existing.id);
-  } else {
-    const { data: inserted, error: insertError } = await supabase
-      .from("rsvps")
-      .insert({ full_name: fullName, email, phone, attending, notes })
       .select("id")
       .single();
-
-    if (insertError || !inserted) {
-      return NextResponse.json({ error: "Could not save your response." }, { status: 500 });
-    }
-    rsvpId = inserted.id;
+    if (error || !inserted) return null;
+    return inserted.id;
   }
 
-  if (attending && roommateIds.length > 0 && rsvpId) {
-    const { error: roomingError } = await supabase
-      .from("rooming_preferences")
-      .insert(roommateIds.map((roommate_guest_id) => ({ rsvp_id: rsvpId!, roommate_guest_id })));
+  const primaryId = await upsertRsvp(fullName, null);
+  if (!primaryId) {
+    return NextResponse.json({ error: "Could not save your response." }, { status: 500 });
+  }
 
+  const rsvpIds = [primaryId];
+  for (const name of additionalNames) {
+    const id = await upsertRsvp(name, primaryId);
+    if (!id) {
+      return NextResponse.json(
+        { error: "Saved your response, but one of the additional names failed to save." },
+        { status: 500 }
+      );
+    }
+    rsvpIds.push(id);
+  }
+
+  if (attending && roommateIds.length > 0) {
+    const roomingRows = rsvpIds.flatMap((rsvp_id) =>
+      roommateIds.map((roommate_guest_id) => ({ rsvp_id, roommate_guest_id }))
+    );
+    const { error: roomingError } = await supabase.from("rooming_preferences").insert(roomingRows);
     if (roomingError) {
       return NextResponse.json({ error: "Saved your RSVP, but rooming picks failed to save." }, { status: 500 });
     }
   }
 
-  return NextResponse.json({ ok: true, id: rsvpId, updated: !!existing });
+  return NextResponse.json({ ok: true, ids: rsvpIds, count: rsvpIds.length });
 }

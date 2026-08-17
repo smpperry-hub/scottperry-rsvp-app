@@ -14,6 +14,7 @@ export type Rsvp = {
   attending: boolean;
   notes: string | null;
   submitted_at: string;
+  submitted_by_rsvp_id: string | null;
 };
 
 export type RoomingPreference = {

@@ -3,6 +3,8 @@
 import { useState } from "react";
 import type { Guest } from "@/lib/supabase/types";
 import RoommatePicker from "@/components/roommate-picker";
+import NameCombobox from "@/components/name-combobox";
+import AdditionalNamesPicker from "@/components/additional-names-picker";
 
 type Props = {
   guests: Guest[];
@@ -12,6 +14,7 @@ type Status = "idle" | "submitting" | "success" | "duplicate" | "error";
 
 export default function RsvpForm({ guests }: Props) {
   const [fullName, setFullName] = useState("");
+  const [additionalNames, setAdditionalNames] = useState<string[]>([]);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [attending, setAttending] = useState<boolean | null>(null);
@@ -31,6 +34,7 @@ export default function RsvpForm({ guests }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           full_name: fullName,
+          additional_names: additionalNames,
           email: email || null,
           phone: phone || null,
           attending,
@@ -72,13 +76,16 @@ export default function RsvpForm({ guests }: Props) {
   }
 
   if (status === "success") {
+    const partySize = 1 + additionalNames.length;
     return (
       <div className="mx-auto max-w-lg rounded border border-ochre/25 bg-white/70 p-10 text-center">
         <h2 className="font-display text-3xl italic text-ink">
           {attending ? "We can't wait to celebrate with you!" : "We'll miss you!"}
         </h2>
         <p className="mt-3 font-sans text-sm leading-7 text-ink/70">
-          Thanks, {fullName}. Your response has been saved.
+          Thanks, {fullName}
+          {partySize > 1 ? ` — we've recorded a response for all ${partySize} of you` : ""}. Your
+          response has been saved.
         </p>
       </div>
     );
@@ -91,15 +98,23 @@ export default function RsvpForm({ guests }: Props) {
     >
       <div>
         <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
-          Full name *
+          Your full name *
         </label>
-        <input
-          type="text"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-          className="w-full rounded border border-ochre/35 bg-cream px-4 py-3 font-sans text-sm text-ink outline-none focus:border-ochre"
-          required
+        <NameCombobox guests={guests} value={fullName} onChange={setFullName} />
+      </div>
+
+      <div>
+        <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
+          Additional full name(s)
+        </label>
+        <AdditionalNamesPicker
+          guests={guests}
+          selectedNames={additionalNames}
+          onChange={setAdditionalNames}
         />
+        <p className="mt-2 font-sans text-xs text-ink/50">
+          RSVPing for family or a +1? Add their names here.
+        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -160,7 +175,7 @@ export default function RsvpForm({ guests }: Props) {
       {attending === true && guests.length > 0 && (
         <div>
           <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
-            Who would you like to room with?
+            Who Would you like to share a suite with? (select all who apply)
           </label>
           <RoommatePicker
             guests={guests}

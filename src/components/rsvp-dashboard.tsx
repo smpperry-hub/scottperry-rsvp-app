@@ -62,6 +62,8 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
   const attending = rsvps.filter((r) => r.attending).length;
   const declined = rsvps.filter((r) => !r.attending).length;
 
+  const nameById = new Map(rsvps.map((r) => [r.id, r.full_name]));
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-3 gap-4">
@@ -79,6 +81,7 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
               <th className="px-4 py-3">Contact</th>
               <th className="px-4 py-3">Rooming with</th>
               <th className="px-4 py-3">Notes</th>
+              <th className="px-4 py-3">Submitted by</th>
               <th className="px-4 py-3">Submitted</th>
             </tr>
           </thead>
@@ -107,6 +110,11 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
                     : "—"}
                 </td>
                 <td className="px-4 py-3 max-w-xs text-ink/70">{rsvp.notes || "—"}</td>
+                <td className="px-4 py-3 text-ink/70">
+                  {rsvp.submitted_by_rsvp_id
+                    ? nameById.get(rsvp.submitted_by_rsvp_id) ?? "—"
+                    : "—"}
+                </td>
                 <td className="px-4 py-3 whitespace-nowrap text-ink/50">
                   {new Date(rsvp.submitted_at).toLocaleDateString()}
                 </td>
@@ -114,7 +122,7 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
             ))}
             {rsvps.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink/50">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">
                   No responses yet.
                 </td>
               </tr>
