@@ -1,22 +1,17 @@
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 
 function LoginForm() {
   const searchParams = useSearchParams();
+  const callbackError = searchParams.get("error");
   const [email, setEmail] = useState("");
-  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
-  const [message, setMessage] = useState<string | null>(null);
-
-  useEffect(() => {
-    const callbackError = searchParams.get("error");
-    if (callbackError) {
-      setStatus("error");
-      setMessage(callbackError);
-    }
-  }, [searchParams]);
+  const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
+    callbackError ? "error" : "idle"
+  );
+  const [message, setMessage] = useState<string | null>(callbackError);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

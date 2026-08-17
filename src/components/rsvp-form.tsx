@@ -12,6 +12,8 @@ type Props = {
 
 type Status = "idle" | "submitting" | "success" | "duplicate" | "error";
 
+const ROOM_TYPES = ["Studio", "1 Bedroom Suite"] as const;
+
 export default function RsvpForm({ guests }: Props) {
   const [fullName, setFullName] = useState("");
   const [additionalNames, setAdditionalNames] = useState<string[]>([]);
@@ -19,6 +21,7 @@ export default function RsvpForm({ guests }: Props) {
   const [phone, setPhone] = useState("");
   const [attending, setAttending] = useState<boolean | null>(null);
   const [roommateIds, setRoommateIds] = useState<string[]>([]);
+  const [roomType, setRoomType] = useState<string | null>(null);
   const [notes, setNotes] = useState("");
 
   const [status, setStatus] = useState<Status>("idle");
@@ -40,6 +43,7 @@ export default function RsvpForm({ guests }: Props) {
           attending,
           notes: notes || null,
           roommate_guest_ids: roommateIds,
+          room_type_preference: roomType,
           confirmUpdate,
         }),
       });
@@ -171,6 +175,33 @@ export default function RsvpForm({ guests }: Props) {
           </button>
         </div>
       </div>
+
+      {attending === true && (
+        <div>
+          <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
+            Room type preference
+          </label>
+          <div className="flex flex-wrap gap-3">
+            {ROOM_TYPES.map((type) => (
+              <button
+                key={type}
+                type="button"
+                onClick={() => setRoomType(roomType === type ? null : type)}
+                className={`flex-1 rounded border px-4 py-3 font-sans text-sm font-medium transition-colors ${
+                  roomType === type
+                    ? "border-ochre bg-ochre text-white"
+                    : "border-ochre/35 bg-cream text-ink hover:border-ochre"
+                }`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+          <p className="mt-2 font-sans text-xs text-ink/50">
+            I&apos;d prefer a Studio or 1 Bedroom Suite — let us know which, if you have one.
+          </p>
+        </div>
+      )}
 
       {attending === true && guests.length > 0 && (
         <div>

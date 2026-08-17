@@ -15,6 +15,7 @@ export type Rsvp = {
   notes: string | null;
   submitted_at: string;
   submitted_by_rsvp_id: string | null;
+  room_type_preference: string | null;
 };
 
 export type RoomingPreference = {

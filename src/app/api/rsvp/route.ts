@@ -9,8 +9,11 @@ type RsvpPayload = {
   attending?: unknown;
   notes?: unknown;
   roommate_guest_ids?: unknown;
+  room_type_preference?: unknown;
   confirmUpdate?: unknown;
 };
+
+const ROOM_TYPES = ["Studio", "1 Bedroom Suite"] as const;
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>;
 
@@ -45,6 +48,11 @@ export async function POST(request: Request) {
   const email = typeof body.email === "string" ? body.email.trim() : null;
   const phone = typeof body.phone === "string" ? body.phone.trim() : null;
   const notes = typeof body.notes === "string" ? body.notes.trim() : null;
+  const roomTypePreference =
+    typeof body.room_type_preference === "string" &&
+    ROOM_TYPES.includes(body.room_type_preference as (typeof ROOM_TYPES)[number])
+      ? body.room_type_preference
+      : null;
   const confirmUpdate = body.confirmUpdate === true;
   const roommateIds = Array.isArray(body.roommate_guest_ids)
     ? body.roommate_guest_ids.filter((id): id is string => typeof id === "string")
@@ -142,6 +150,7 @@ export async function POST(request: Request) {
           phone,
           attending,
           notes,
+          room_type_preference: roomTypePreference,
           submitted_by_rsvp_id: submittedByRsvpId,
           submitted_at: new Date().toISOString(),
         })
@@ -160,6 +169,7 @@ export async function POST(request: Request) {
         phone,
         attending,
         notes,
+        room_type_preference: roomTypePreference,
         submitted_by_rsvp_id: submittedByRsvpId,
       })
       .select("id")

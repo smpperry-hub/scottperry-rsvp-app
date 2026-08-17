@@ -80,6 +80,7 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
               <th className="px-4 py-3">Status</th>
               <th className="px-4 py-3">Contact</th>
               <th className="px-4 py-3">Rooming with</th>
+              <th className="px-4 py-3">Room type</th>
               <th className="px-4 py-3">Notes</th>
               <th className="px-4 py-3">Submitted by</th>
               <th className="px-4 py-3">Submitted</th>
@@ -109,6 +110,7 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
                     ? rsvp.roommates.map((r) => r.name).join(", ")
                     : "—"}
                 </td>
+                <td className="px-4 py-3 text-ink/70">{rsvp.room_type_preference || "—"}</td>
                 <td className="px-4 py-3 max-w-xs text-ink/70">{rsvp.notes || "—"}</td>
                 <td className="px-4 py-3 text-ink/70">
                   {rsvp.submitted_by_rsvp_id
@@ -122,7 +124,7 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
             ))}
             {rsvps.length === 0 && (
               <tr>
-                <td colSpan={7} className="px-4 py-8 text-center text-ink/50">
+                <td colSpan={8} className="px-4 py-8 text-center text-ink/50">
                   No responses yet.
                 </td>
               </tr>
