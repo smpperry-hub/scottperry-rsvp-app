@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
-import type { Rsvp } from "@/lib/supabase/types";
+import type { Rsvp, RsvpType } from "@/lib/supabase/types";
 
 export type RsvpWithRoommates = Rsvp & { roommates: { id: string; name: string }[] };
 
@@ -33,14 +33,21 @@ async function fetchDashboardData(
   }));
 }
 
-export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[] }) {
-  const [rsvps, setRsvps] = useState<RsvpWithRoommates[]>(initial);
+export default function RsvpDashboard({
+  initial,
+  defaultType,
+}: {
+  initial: RsvpWithRoommates[];
+  defaultType: RsvpType;
+}) {
+  const [allRsvps, setAllRsvps] = useState<RsvpWithRoommates[]>(initial);
+  const [activeType, setActiveType] = useState<RsvpType>(defaultType);
 
   useEffect(() => {
     const supabase = createClient();
 
     const refresh = () => {
-      fetchDashboardData(supabase).then(setRsvps);
+      fetchDashboardData(supabase).then(setAllRsvps);
     };
 
     const channel = supabase
@@ -58,6 +65,10 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
     };
   }, []);
 
+  const rsvps = allRsvps.filter((r) => r.rsvp_type === activeType);
+  const stdCount = allRsvps.filter((r) => r.rsvp_type === "save_the_date").length;
+  const fiCount = allRsvps.filter((r) => r.rsvp_type === "formal_invite").length;
+
   const total = rsvps.length;
   const attending = rsvps.filter((r) => r.attending).length;
   const declined = rsvps.filter((r) => !r.attending).length;
@@ -68,6 +79,31 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
 
   return (
     <div className="space-y-6">
+      <div className="flex gap-2">
+        <button
+          type="button"
+          onClick={() => setActiveType("save_the_date")}
+          className={`rounded-full px-4 py-2 font-sans text-xs font-medium uppercase tracking-wider transition-colors ${
+            activeType === "save_the_date"
+              ? "bg-ink text-cream"
+              : "bg-white/70 text-ink/60 hover:bg-sand"
+          }`}
+        >
+          Save the Date ({stdCount})
+        </button>
+        <button
+          type="button"
+          onClick={() => setActiveType("formal_invite")}
+          className={`rounded-full px-4 py-2 font-sans text-xs font-medium uppercase tracking-wider transition-colors ${
+            activeType === "formal_invite"
+              ? "bg-ink text-cream"
+              : "bg-white/70 text-ink/60 hover:bg-sand"
+          }`}
+        >
+          Formal Invite ({fiCount})
+        </button>
+      </div>
+
       <div className="grid grid-cols-3 gap-4">
         <StatCard label="Responded" value={total} accent="text-ink" />
         <StatCard label="Attending" value={attending} accent="text-sage" />

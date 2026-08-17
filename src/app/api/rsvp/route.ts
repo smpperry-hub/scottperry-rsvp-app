@@ -10,10 +10,12 @@ type RsvpPayload = {
   notes?: unknown;
   roommate_guest_ids?: unknown;
   room_type_preference?: unknown;
+  rsvp_type?: unknown;
   confirmUpdate?: unknown;
 };
 
 const ROOM_TYPES = ["Studio", "1 Bedroom Suite", "Shared Suite", "No Preference"] as const;
+const RSVP_TYPES = ["save_the_date", "formal_invite"] as const;
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>;
 
@@ -53,6 +55,11 @@ export async function POST(request: Request) {
     ROOM_TYPES.includes(body.room_type_preference as (typeof ROOM_TYPES)[number])
       ? body.room_type_preference
       : null;
+  const rsvpType =
+    typeof body.rsvp_type === "string" &&
+    RSVP_TYPES.includes(body.rsvp_type as (typeof RSVP_TYPES)[number])
+      ? body.rsvp_type
+      : "formal_invite";
   const confirmUpdate = body.confirmUpdate === true;
   const roommateIds = Array.isArray(body.roommate_guest_ids)
     ? body.roommate_guest_ids.filter((id): id is string => typeof id === "string")
@@ -109,6 +116,7 @@ export async function POST(request: Request) {
       .from("rsvps")
       .select("id, full_name")
       .ilike("full_name", n)
+      .eq("rsvp_type", rsvpType)
       .maybeSingle();
 
     if (existingError) {
@@ -151,6 +159,7 @@ export async function POST(request: Request) {
           attending,
           notes,
           room_type_preference: roomTypePreference,
+          rsvp_type: rsvpType,
           submitted_by_rsvp_id: submittedByRsvpId,
           submitted_at: new Date().toISOString(),
         })
@@ -170,6 +179,7 @@ export async function POST(request: Request) {
         attending,
         notes,
         room_type_preference: roomTypePreference,
+        rsvp_type: rsvpType,
         submitted_by_rsvp_id: submittedByRsvpId,
       })
       .select("id")
