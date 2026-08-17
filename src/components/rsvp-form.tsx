@@ -12,7 +12,7 @@ type Props = {
 
 type Status = "idle" | "submitting" | "success" | "duplicate" | "error";
 
-const ROOM_TYPES = ["Studio", "1 Bedroom Suite"] as const;
+const ROOM_TYPES = ["Studio", "1 Bedroom Suite", "Shared Suite", "No Preference"] as const;
 
 export default function RsvpForm({ guests }: Props) {
   const [fullName, setFullName] = useState("");
@@ -181,13 +181,13 @@ export default function RsvpForm({ guests }: Props) {
           <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
             Room type preference
           </label>
-          <div className="flex flex-wrap gap-3">
+          <div className="grid grid-cols-2 gap-3">
             {ROOM_TYPES.map((type) => (
               <button
                 key={type}
                 type="button"
                 onClick={() => setRoomType(roomType === type ? null : type)}
-                className={`flex-1 rounded border px-4 py-3 font-sans text-sm font-medium transition-colors ${
+                className={`rounded border px-4 py-3 font-sans text-sm font-medium transition-colors ${
                   roomType === type
                     ? "border-ochre bg-ochre text-white"
                     : "border-ochre/35 bg-cream text-ink hover:border-ochre"

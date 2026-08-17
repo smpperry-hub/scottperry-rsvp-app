@@ -13,7 +13,7 @@ type RsvpPayload = {
   confirmUpdate?: unknown;
 };
 
-const ROOM_TYPES = ["Studio", "1 Bedroom Suite"] as const;
+const ROOM_TYPES = ["Studio", "1 Bedroom Suite", "Shared Suite", "No Preference"] as const;
 
 type SupabaseAdmin = ReturnType<typeof createAdminClient>;
 
