@@ -1,10 +1,10 @@
 import RsvpForm from "@/components/rsvp-form";
-import { getGuests } from "@/lib/get-guests";
+import { getGuests, getParties } from "@/lib/get-guests";
 
 export const dynamic = "force-dynamic";
 
 export default async function FormalInvitePage() {
-  const guests = await getGuests();
+  const [guests, parties] = await Promise.all([getGuests(), getParties()]);
 
   return (
     <main className="flex-1">
@@ -22,7 +22,7 @@ export default async function FormalInvitePage() {
       </header>
 
       <section className="px-6 py-16">
-        <RsvpForm guests={guests} />
+        <RsvpForm guests={guests} parties={parties} />
       </section>
     </main>
   );

@@ -1,7 +1,31 @@
+export type InviteStatus = "for_sure" | "waitlist";
+
+export const RELATIONS = [
+  "Scott Immediate Family",
+  "Mia Immediate Family",
+  "Mia Home Friends",
+  "Scott Home Friends",
+  "Joint Friends",
+  "Scott College Friends",
+  "Mia College Friends",
+  "Scott Extended Family",
+  "Mia Extended Family",
+] as const;
+
+export type Relation = (typeof RELATIONS)[number];
+
+export type Party = {
+  id: string;
+  label: string;
+  created_at: string;
+};
+
 export type Guest = {
   id: string;
   name: string;
-  party_label: string | null;
+  party_id: string | null;
+  invite_status: InviteStatus | null;
+  relation: Relation | null;
   created_at: string;
 };
 

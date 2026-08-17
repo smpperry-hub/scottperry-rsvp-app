@@ -1,11 +1,11 @@
 import RsvpForm from "@/components/rsvp-form";
 import SaveTheDateForm from "@/components/save-the-date-form";
-import { getActiveRsvpType, getGuests } from "@/lib/get-guests";
+import { getActiveRsvpType, getGuests, getParties } from "@/lib/get-guests";
 
 export const dynamic = "force-dynamic";
 
 export default async function RootPage() {
-  const guests = await getGuests();
+  const [guests, parties] = await Promise.all([getGuests(), getParties()]);
   const isFormalInvite = getActiveRsvpType() === "formal_invite";
 
   return (
@@ -25,7 +25,11 @@ export default async function RootPage() {
       </header>
 
       <section className="px-6 py-16">
-        {isFormalInvite ? <RsvpForm guests={guests} /> : <SaveTheDateForm guests={guests} />}
+        {isFormalInvite ? (
+          <RsvpForm guests={guests} parties={parties} />
+        ) : (
+          <SaveTheDateForm guests={guests} />
+        )}
       </section>
     </main>
   );

@@ -1,20 +1,21 @@
 "use client";
 
 import { useState } from "react";
-import type { Guest } from "@/lib/supabase/types";
+import type { Guest, Party } from "@/lib/supabase/types";
 import RoommatePicker from "@/components/roommate-picker";
 import NameCombobox from "@/components/name-combobox";
 import AdditionalNamesPicker from "@/components/additional-names-picker";
 
 type Props = {
   guests: Guest[];
+  parties: Party[];
 };
 
 type Status = "idle" | "submitting" | "success" | "duplicate" | "error";
 
 const ROOM_TYPES = ["Studio", "1 Bedroom Suite", "Shared Suite", "No Preference"] as const;
 
-export default function RsvpForm({ guests }: Props) {
+export default function RsvpForm({ guests, parties }: Props) {
   const [fullName, setFullName] = useState("");
   const [additionalNames, setAdditionalNames] = useState<string[]>([]);
   const [email, setEmail] = useState("");
@@ -211,6 +212,7 @@ export default function RsvpForm({ guests }: Props) {
           </label>
           <RoommatePicker
             guests={guests}
+            parties={parties}
             selectedIds={roommateIds}
             onChange={setRoommateIds}
           />

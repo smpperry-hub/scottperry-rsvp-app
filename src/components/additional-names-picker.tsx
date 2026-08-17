@@ -104,12 +104,7 @@ export default function AdditionalNamesPicker({ guests, selectedNames, onChange 
                 onClick={() => addName(guest.name)}
                 className="flex w-full items-center justify-between px-4 py-2 text-left font-sans text-sm text-ink hover:bg-sand"
               >
-                <span>
-                  {guest.name}
-                  {guest.party_label ? (
-                    <span className="ml-2 text-ink/50">— {guest.party_label}</span>
-                  ) : null}
-                </span>
+                <span>{guest.name}</span>
               </button>
             ))
           )}

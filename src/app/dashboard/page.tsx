@@ -8,11 +8,13 @@ export const dynamic = "force-dynamic";
 export default async function DashboardPage() {
   const supabase = await createClient();
 
-  const [{ data: guests }, { data: rsvps }, { data: roomingRows }] = await Promise.all([
-    supabase.from("guests").select("*").order("name"),
-    supabase.from("rsvps").select("*").order("submitted_at", { ascending: false }),
-    supabase.from("rooming_preferences").select("rsvp_id, roommate_guest_id, guests(id, name)"),
-  ]);
+  const [{ data: guests }, { data: parties }, { data: rsvps }, { data: roomingRows }] =
+    await Promise.all([
+      supabase.from("guests").select("*").order("name"),
+      supabase.from("parties").select("*").order("label"),
+      supabase.from("rsvps").select("*").order("submitted_at", { ascending: false }),
+      supabase.from("rooming_preferences").select("rsvp_id, roommate_guest_id, guests(id, name)"),
+    ]);
 
   const roomingByRsvp = new Map<string, { id: string; name: string }[]>();
   for (const row of roomingRows ?? []) {
@@ -31,7 +33,7 @@ export default async function DashboardPage() {
   return (
     <main className="mx-auto max-w-6xl space-y-8 px-6 py-10">
       <RsvpDashboard initial={initialRsvps} defaultType={getActiveRsvpType()} />
-      <GuestManager initialGuests={guests ?? []} />
+      <GuestManager initialGuests={guests ?? []} initialParties={parties ?? []} />
     </main>
   );
 }
