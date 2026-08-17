@@ -63,6 +63,8 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
   const declined = rsvps.filter((r) => !r.attending).length;
 
   const nameById = new Map(rsvps.map((r) => [r.id, r.full_name]));
+  const submittedByName = (rsvp: RsvpWithRoommates) =>
+    rsvp.submitted_by_rsvp_id ? nameById.get(rsvp.submitted_by_rsvp_id) ?? "—" : "—";
 
   return (
     <div className="space-y-6">
@@ -72,7 +74,8 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
         <StatCard label="Declined" value={declined} accent="text-clay" />
       </div>
 
-      <div className="overflow-x-auto rounded border border-ochre/25 bg-white/70">
+      {/* Table view - md and up */}
+      <div className="hidden overflow-x-auto rounded border border-ochre/25 bg-white/70 md:block">
         <table className="w-full text-left font-sans text-sm">
           <thead>
             <tr className="border-b border-ochre/20 text-xs uppercase tracking-wider text-ink/50">
@@ -91,15 +94,7 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
               <tr key={rsvp.id} className="border-b border-ochre/10 align-top">
                 <td className="px-4 py-3 font-medium text-ink">{rsvp.full_name}</td>
                 <td className="px-4 py-3">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      rsvp.attending
-                        ? "bg-sage/15 text-sage"
-                        : "bg-clay/15 text-clay"
-                    }`}
-                  >
-                    {rsvp.attending ? "Attending" : "Declined"}
-                  </span>
+                  <StatusPill attending={rsvp.attending} />
                 </td>
                 <td className="px-4 py-3 text-ink/70">
                   {rsvp.email && <div>{rsvp.email}</div>}
@@ -112,11 +107,7 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
                 </td>
                 <td className="px-4 py-3 text-ink/70">{rsvp.room_type_preference || "—"}</td>
                 <td className="px-4 py-3 max-w-xs text-ink/70">{rsvp.notes || "—"}</td>
-                <td className="px-4 py-3 text-ink/70">
-                  {rsvp.submitted_by_rsvp_id
-                    ? nameById.get(rsvp.submitted_by_rsvp_id) ?? "—"
-                    : "—"}
-                </td>
+                <td className="px-4 py-3 text-ink/70">{submittedByName(rsvp)}</td>
                 <td className="px-4 py-3 whitespace-nowrap text-ink/50">
                   {new Date(rsvp.submitted_at).toLocaleDateString()}
                 </td>
@@ -132,6 +123,69 @@ export default function RsvpDashboard({ initial }: { initial: RsvpWithRoommates[
           </tbody>
         </table>
       </div>
+
+      {/* Card view - below md */}
+      <div className="space-y-3 md:hidden">
+        {rsvps.length === 0 && (
+          <div className="rounded border border-ochre/25 bg-white/70 px-4 py-8 text-center text-ink/50">
+            No responses yet.
+          </div>
+        )}
+        {rsvps.map((rsvp) => (
+          <div key={rsvp.id} className="rounded border border-ochre/25 bg-white/70 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <p className="font-medium text-ink">{rsvp.full_name}</p>
+              <StatusPill attending={rsvp.attending} />
+            </div>
+            <dl className="mt-3 space-y-2 text-sm">
+              {(rsvp.email || rsvp.phone) && (
+                <CardField label="Contact">
+                  {rsvp.email && <div>{rsvp.email}</div>}
+                  {rsvp.phone && <div>{rsvp.phone}</div>}
+                </CardField>
+              )}
+              {rsvp.roommates.length > 0 && (
+                <CardField label="Rooming with">
+                  {rsvp.roommates.map((r) => r.name).join(", ")}
+                </CardField>
+              )}
+              {rsvp.room_type_preference && (
+                <CardField label="Room type">{rsvp.room_type_preference}</CardField>
+              )}
+              {rsvp.notes && <CardField label="Notes">{rsvp.notes}</CardField>}
+              {rsvp.submitted_by_rsvp_id && (
+                <CardField label="Submitted by">{submittedByName(rsvp)}</CardField>
+              )}
+              <CardField label="Submitted">
+                {new Date(rsvp.submitted_at).toLocaleDateString()}
+              </CardField>
+            </dl>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function StatusPill({ attending }: { attending: boolean }) {
+  return (
+    <span
+      className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
+        attending ? "bg-sage/15 text-sage" : "bg-clay/15 text-clay"
+      }`}
+    >
+      {attending ? "Attending" : "Declined"}
+    </span>
+  );
+}
+
+function CardField({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex gap-2">
+      <dt className="w-28 shrink-0 font-sans text-xs uppercase tracking-wider text-ink/50">
+        {label}
+      </dt>
+      <dd className="text-ink/80">{children}</dd>
     </div>
   );
 }
