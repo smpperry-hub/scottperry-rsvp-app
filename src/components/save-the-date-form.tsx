@@ -17,6 +17,7 @@ export default function SaveTheDateForm({ guests }: Props) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [attending, setAttending] = useState<boolean | null>(null);
+  const [notes, setNotes] = useState("");
 
   const [status, setStatus] = useState<Status>("idle");
   const [message, setMessage] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export default function SaveTheDateForm({ guests }: Props) {
           email: email || null,
           phone: phone || null,
           attending,
+          notes: notes || null,
           confirmUpdate,
         }),
       });
@@ -76,12 +78,21 @@ export default function SaveTheDateForm({ guests }: Props) {
     return (
       <div className="mx-auto max-w-lg rounded border border-ochre/25 bg-white/70 p-10 text-center">
         <h2 className="font-display text-3xl italic text-ink">
-          {attending ? "So glad you're penciling us in!" : "We'll miss you!"}
+          {attending ? "So excited to celebrate with you!" : "We'll miss you!"}
         </h2>
         <p className="mt-3 font-sans text-sm leading-7 text-ink/70">
-          Thanks, {fullName}
-          {partySize > 1 ? ` — we've noted all ${partySize} of you` : ""}. A formal invite with
-          all the details will follow.
+          {attending ? (
+            <>
+              Thanks, {fullName}
+              {partySize > 1 ? ` — we've noted all ${partySize} of you` : ""}. A formal invite
+              with all the details will follow.
+            </>
+          ) : (
+            <>
+              Thanks, {fullName}
+              {partySize > 1 ? ` — we've noted this for all ${partySize} of you.` : "."}
+            </>
+          )}
         </p>
       </div>
     );
@@ -166,6 +177,18 @@ export default function SaveTheDateForm({ guests }: Props) {
             Can&apos;t make it
           </button>
         </div>
+      </div>
+
+      <div>
+        <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
+          Notes
+        </label>
+        <textarea
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          rows={3}
+          className="w-full resize-y rounded border border-ochre/35 bg-cream px-4 py-3 font-sans text-sm text-ink outline-none focus:border-ochre"
+        />
       </div>
 
       {status === "duplicate" && (
