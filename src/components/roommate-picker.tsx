@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Guest, Party } from "@/lib/supabase/types";
+import type { PublicGuest, Party } from "@/lib/supabase/types";
 
 type Props = {
-  guests: Guest[];
+  guests: PublicGuest[];
   parties: Party[];
   selectedIds: string[];
   onChange: (ids: string[]) => void;
@@ -17,10 +17,10 @@ type Group = {
   memberNames: string[];
 };
 
-function buildGroups(guests: Guest[], parties: Party[]): Group[] {
+function buildGroups(guests: PublicGuest[], parties: Party[]): Group[] {
   const partyLabelById = new Map(parties.map((p) => [p.id, p.label]));
-  const byParty = new Map<string, Guest[]>();
-  const ungrouped: Guest[] = [];
+  const byParty = new Map<string, PublicGuest[]>();
+  const ungrouped: PublicGuest[] = [];
 
   for (const guest of guests) {
     if (guest.party_id) {

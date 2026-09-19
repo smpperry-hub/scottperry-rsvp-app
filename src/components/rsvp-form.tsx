@@ -1,13 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { Guest, Party } from "@/lib/supabase/types";
+import type { PublicGuest, Party } from "@/lib/supabase/types";
 import RoommatePicker from "@/components/roommate-picker";
 import NameCombobox from "@/components/name-combobox";
 import AdditionalNamesPicker from "@/components/additional-names-picker";
 
 type Props = {
-  guests: Guest[];
+  guests: PublicGuest[];
   parties: Party[];
 };
 

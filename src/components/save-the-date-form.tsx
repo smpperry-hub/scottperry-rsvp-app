@@ -1,12 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import type { Guest } from "@/lib/supabase/types";
+import type { PublicGuest } from "@/lib/supabase/types";
 import NameCombobox from "@/components/name-combobox";
 import AdditionalNamesPicker from "@/components/additional-names-picker";
 
 type Props = {
-  guests: Guest[];
+  guests: PublicGuest[];
 };
 
 type Status = "idle" | "submitting" | "success" | "duplicate" | "error";

@@ -31,6 +31,10 @@ export type Guest = {
   created_at: string;
 };
 
+// The only guest fields the public RSVP pages may see. Invite status and
+// relation are host-only; the database blocks anon from reading them.
+export type PublicGuest = Pick<Guest, "id" | "name" | "party_id">;
+
 export type RsvpType = "save_the_date" | "formal_invite";
 
 export type Rsvp = {

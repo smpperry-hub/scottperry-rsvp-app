@@ -1,10 +1,10 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type { Guest } from "@/lib/supabase/types";
+import type { PublicGuest } from "@/lib/supabase/types";
 
 type Props = {
-  guests: Guest[];
+  guests: PublicGuest[];
   selectedNames: string[];
   onChange: (names: string[]) => void;
 };

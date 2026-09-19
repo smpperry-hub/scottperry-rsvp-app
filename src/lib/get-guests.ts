@@ -1,5 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
-import type { Guest, Party } from "@/lib/supabase/types";
+import type { Party, PublicGuest } from "@/lib/supabase/types";
 
 function publicClient() {
   return createClient(
@@ -8,10 +8,14 @@ function publicClient() {
   );
 }
 
-export async function getGuests(): Promise<Guest[]> {
-  const { data, error } = await publicClient().from("guests").select("*").order("name");
+// Explicit columns on purpose: anon must never read invite_status/relation.
+export async function getGuests(): Promise<PublicGuest[]> {
+  const { data, error } = await publicClient()
+    .from("guests")
+    .select("id, name, party_id")
+    .order("name");
   if (error) return [];
-  return (data ?? []) as Guest[];
+  return (data ?? []) as PublicGuest[];
 }
 
 export async function getParties(): Promise<Party[]> {
