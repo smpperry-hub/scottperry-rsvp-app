@@ -25,7 +25,7 @@ export default async function DashboardLayout({
     <div className="flex min-h-screen flex-1 flex-col bg-cream">
       <header className="flex items-center justify-between bg-ink px-6 py-4 text-cream">
         <div>
-          <h1 className="font-display text-xl italic">Scott &amp; Mia — RSVP Dashboard</h1>
+          <h1 className="font-display text-xl italic">Mia &amp; Scott — RSVP Dashboard</h1>
           <p className="text-xs text-cream/50">{user.email}</p>
         </div>
         <SignOutButton />

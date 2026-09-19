@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Scott & Mia — RSVP",
-  description: "RSVP for Scott & Mia's wedding, November 6, 2027 in Palm Springs.",
+  title: "Mia & Scott — RSVP",
+  description: "RSVP for Mia & Scott's wedding, November 5-7, 2027 in Palm Springs.",
 };
 
 export default function RootLayout({
