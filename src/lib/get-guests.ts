@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createAdminClient } from "@/lib/supabase/admin";
 import type { Party, PublicGuest } from "@/lib/supabase/types";
 
 function publicClient() {
@@ -8,11 +9,14 @@ function publicClient() {
   );
 }
 
-// Explicit columns on purpose: anon must never read invite_status/relation.
+// Only "For sure" guests are offered in the public name pickers. This runs
+// server-side with the service role because anon can't read invite_status,
+// so waitlisted names never reach the browser. Explicit columns on purpose.
 export async function getGuests(): Promise<PublicGuest[]> {
-  const { data, error } = await publicClient()
+  const { data, error } = await createAdminClient()
     .from("guests")
     .select("id, name, party_id")
+    .eq("invite_status", "for_sure")
     .order("name");
   if (error) return [];
   return (data ?? []) as PublicGuest[];
