@@ -5,6 +5,8 @@ export const RELATIONS = [
   "Mia Immediate Family",
   "Mia Home Friends",
   "Scott Home Friends",
+  "Mia Family Friends",
+  "Scott Family Friends",
   "Joint Friends",
   "Scott College Friends",
   "Mia College Friends",

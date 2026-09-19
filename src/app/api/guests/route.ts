@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { RELATIONS } from "@/lib/supabase/types";
 
 const ALLOWED_EMAILS = (process.env.HOST_ALLOWED_EMAILS ?? "")
   .split(",")
@@ -7,17 +8,6 @@ const ALLOWED_EMAILS = (process.env.HOST_ALLOWED_EMAILS ?? "")
   .filter(Boolean);
 
 const INVITE_STATUSES = ["for_sure", "waitlist"] as const;
-const RELATIONS = [
-  "Scott Immediate Family",
-  "Mia Immediate Family",
-  "Mia Home Friends",
-  "Scott Home Friends",
-  "Joint Friends",
-  "Scott College Friends",
-  "Mia College Friends",
-  "Scott Extended Family",
-  "Mia Extended Family",
-] as const;
 
 type SupabaseServer = Awaited<ReturnType<typeof createClient>>;
 
