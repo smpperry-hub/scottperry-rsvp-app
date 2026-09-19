@@ -37,7 +37,8 @@ export type Rsvp = {
   full_name: string;
   email: string | null;
   phone: string | null;
-  attending: boolean;
+  // true = yes, false = no, null = "maybe" (save_the_date only)
+  attending: boolean | null;
   notes: string | null;
   submitted_at: string;
   submitted_by_rsvp_id: string | null;

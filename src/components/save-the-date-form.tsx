@@ -10,13 +10,20 @@ type Props = {
 };
 
 type Status = "idle" | "submitting" | "success" | "duplicate" | "error";
+type Answer = "yes" | "no" | "maybe";
+
+const ANSWER_TO_ATTENDING: Record<Answer, boolean | null> = {
+  yes: true,
+  no: false,
+  maybe: null,
+};
 
 export default function SaveTheDateForm({ guests }: Props) {
   const [fullName, setFullName] = useState("");
   const [additionalNames, setAdditionalNames] = useState<string[]>([]);
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
-  const [attending, setAttending] = useState<boolean | null>(null);
+  const [answer, setAnswer] = useState<Answer | null>(null);
   const [notes, setNotes] = useState("");
 
   const [status, setStatus] = useState<Status>("idle");
@@ -36,7 +43,7 @@ export default function SaveTheDateForm({ guests }: Props) {
           additional_names: additionalNames,
           email: email || null,
           phone: phone || null,
-          attending,
+          attending: answer ? ANSWER_TO_ATTENDING[answer] : null,
           notes: notes || null,
           confirmUpdate,
         }),
@@ -65,7 +72,7 @@ export default function SaveTheDateForm({ guests }: Props) {
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!fullName.trim() || attending === null) {
+    if (!fullName.trim() || answer === null) {
       setStatus("error");
       setMessage("Please add your name and let us know if you think you can make it.");
       return;
@@ -75,19 +82,31 @@ export default function SaveTheDateForm({ guests }: Props) {
 
   if (status === "success") {
     const partySize = 1 + additionalNames.length;
+    const heading =
+      answer === "yes"
+        ? "So excited to celebrate with you!"
+        : answer === "maybe"
+          ? "We hope you can make it!"
+          : "We'll miss you!";
     return (
       <div className="mx-auto max-w-lg rounded border border-ochre/25 bg-white/70 p-10 text-center">
-        <h2 className="font-display text-3xl italic text-ink">
-          {attending ? "So excited to celebrate with you!" : "We'll miss you!"}
-        </h2>
+        <h2 className="font-display text-3xl italic text-ink">{heading}</h2>
         <p className="mt-3 font-sans text-sm leading-7 text-ink/70">
-          {attending ? (
+          {answer === "yes" && (
             <>
               Thanks, {fullName}
               {partySize > 1 ? ` — we've noted all ${partySize} of you` : ""}. A formal invite
               with all the details will follow.
             </>
-          ) : (
+          )}
+          {answer === "maybe" && (
+            <>
+              Thanks, {fullName}
+              {partySize > 1 ? ` — we've noted this for all ${partySize} of you` : ""}. Let us
+              know when your plans firm up — a formal invite will follow either way.
+            </>
+          )}
+          {answer === "no" && (
             <>
               Thanks, {fullName}
               {partySize > 1 ? ` — we've noted this for all ${partySize} of you.` : "."}
@@ -153,12 +172,12 @@ export default function SaveTheDateForm({ guests }: Props) {
         <label className="mb-2 block font-sans text-xs font-medium uppercase tracking-[0.18em] text-clay">
           Think you can make it? *
         </label>
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           <button
             type="button"
-            onClick={() => setAttending(true)}
+            onClick={() => setAnswer("yes")}
             className={`flex-1 rounded border px-4 py-3 font-sans text-sm font-medium transition-colors ${
-              attending === true
+              answer === "yes"
                 ? "border-sage bg-sage text-white"
                 : "border-ochre/35 bg-cream text-ink hover:border-sage"
             }`}
@@ -167,9 +186,20 @@ export default function SaveTheDateForm({ guests }: Props) {
           </button>
           <button
             type="button"
-            onClick={() => setAttending(false)}
+            onClick={() => setAnswer("maybe")}
             className={`flex-1 rounded border px-4 py-3 font-sans text-sm font-medium transition-colors ${
-              attending === false
+              answer === "maybe"
+                ? "border-ochre bg-ochre text-white"
+                : "border-ochre/35 bg-cream text-ink hover:border-ochre"
+            }`}
+          >
+            Maybe
+          </button>
+          <button
+            type="button"
+            onClick={() => setAnswer("no")}
+            className={`flex-1 rounded border px-4 py-3 font-sans text-sm font-medium transition-colors ${
+              answer === "no"
                 ? "border-clay bg-clay text-white"
                 : "border-ochre/35 bg-cream text-ink hover:border-clay"
             }`}

@@ -70,8 +70,9 @@ export default function RsvpDashboard({
   const fiCount = allRsvps.filter((r) => r.rsvp_type === "formal_invite").length;
 
   const total = rsvps.length;
-  const attending = rsvps.filter((r) => r.attending).length;
-  const declined = rsvps.filter((r) => !r.attending).length;
+  const attending = rsvps.filter((r) => r.attending === true).length;
+  const maybe = rsvps.filter((r) => r.attending === null).length;
+  const declined = rsvps.filter((r) => r.attending === false).length;
 
   const nameById = new Map(rsvps.map((r) => [r.id, r.full_name]));
   const submittedByName = (rsvp: RsvpWithRoommates) =>
@@ -104,9 +105,10 @@ export default function RsvpDashboard({
         </button>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
         <StatCard label="Responded" value={total} accent="text-ink" />
         <StatCard label="Attending" value={attending} accent="text-sage" />
+        <StatCard label="Maybe" value={maybe} accent="text-ochre" />
         <StatCard label="Declined" value={declined} accent="text-clay" />
       </div>
 
@@ -203,14 +205,18 @@ export default function RsvpDashboard({
   );
 }
 
-function StatusPill({ attending }: { attending: boolean }) {
+function StatusPill({ attending }: { attending: boolean | null }) {
+  const colorClass =
+    attending === true
+      ? "bg-sage/15 text-sage"
+      : attending === false
+        ? "bg-clay/15 text-clay"
+        : "bg-ochre/15 text-ochre";
+  const label = attending === true ? "Attending" : attending === false ? "Declined" : "Maybe";
+
   return (
-    <span
-      className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${
-        attending ? "bg-sage/15 text-sage" : "bg-clay/15 text-clay"
-      }`}
-    >
-      {attending ? "Attending" : "Declined"}
+    <span className={`shrink-0 rounded-full px-3 py-1 text-xs font-medium ${colorClass}`}>
+      {label}
     </span>
   );
 }

@@ -71,7 +71,8 @@ export async function POST(request: Request) {
   if (!fullName) {
     return NextResponse.json({ error: "Full name is required." }, { status: 400 });
   }
-  if (typeof attending !== "boolean") {
+  const isMaybe = attending === null && rsvpType === "save_the_date";
+  if (typeof attending !== "boolean" && !isMaybe) {
     return NextResponse.json(
       { error: "Please let us know whether you're attending." },
       { status: 400 }
