@@ -118,9 +118,6 @@ export default function RsvpForm({ guests, parties }: Props) {
           selectedNames={additionalNames}
           onChange={setAdditionalNames}
         />
-        <p className="mt-2 font-sans text-xs text-ink/50">
-          RSVPing for family or a +1? Add their names here; If your invite indicates a guest, please include their full name.
-        </p>
       </div>
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
