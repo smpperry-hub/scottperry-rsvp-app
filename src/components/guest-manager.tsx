@@ -167,7 +167,16 @@ export default function GuestManager({ initialGuests, initialParties }: Props) {
 
   return (
     <div className="rounded border border-ochre/25 bg-white/70 p-6">
-      <h2 className="font-display text-xl italic text-ink">Guest list</h2>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h2 className="font-display text-xl italic text-ink">Guest list</h2>
+        <a
+          href="/api/export?type=guests"
+          download
+          className="rounded-full border border-ochre/35 bg-white/70 px-4 py-2 font-sans text-xs font-medium uppercase tracking-wider text-ink/70 transition-colors hover:bg-sand"
+        >
+          Export guest list (CSV)
+        </a>
+      </div>
       <p className="mt-1 font-sans text-xs text-ink/60">
         Names added here populate the rooming picker on the public RSVP form.
         Group guests into a party (e.g. a couple) so they can be selected

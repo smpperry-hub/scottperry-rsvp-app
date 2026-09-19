@@ -80,6 +80,7 @@ export default function RsvpDashboard({
 
   return (
     <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
       <div className="flex gap-2">
         <button
           type="button"
@@ -103,6 +104,14 @@ export default function RsvpDashboard({
         >
           Formal Invite ({fiCount})
         </button>
+      </div>
+      <a
+        href="/api/export?type=responses"
+        download
+        className="rounded-full border border-ochre/35 bg-white/70 px-4 py-2 font-sans text-xs font-medium uppercase tracking-wider text-ink/70 transition-colors hover:bg-sand"
+      >
+        Export responses (CSV)
+      </a>
       </div>
 
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
