@@ -139,7 +139,7 @@ export default function SaveTheDateForm({ guests }: Props) {
           onChange={setAdditionalNames}
         />
         <p className="mt-2 font-sans text-xs text-ink/50">
-          Replying for your household too? Add their names here.
+          Replying for your household too? Add their names here; If your invite indicates a guest, please include their full name.
         </p>
       </div>
 
